@@ -62,10 +62,39 @@ bool D3D11Renderer::Initialize(HWND hwnd, int width, int height)
     if (FAILED(hr))
         return false;
 
+    D3D11_TEXTURE2D_DESC depthDesc = {};
+
+    depthDesc.Width = width;
+    depthDesc.Height = height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    hr = m_Device->CreateTexture2D(
+        &depthDesc,
+        nullptr,
+        m_DepthStencilBuffer.GetAddressOf()
+    );
+
+    if (FAILED(hr))
+        return false;
+
+    hr = m_Device->CreateDepthStencilView(
+        m_DepthStencilBuffer.Get(),
+        nullptr,
+        m_DepthStencilView.GetAddressOf()
+    );
+
+    if (FAILED(hr))
+        return false;
+
     m_DeviceContext->OMSetRenderTargets(
         1,
         m_RenderTargetView.GetAddressOf(),
-        nullptr
+        m_DepthStencilView.Get()
     );
 
     // ·»´õ¸µ ¿µ¿ª
@@ -99,6 +128,13 @@ void D3D11Renderer::BeginFrame()
         m_RenderTargetView.Get(),
         clearColor
     );
+
+    m_DeviceContext->ClearDepthStencilView(
+        m_DepthStencilView.Get(),
+        D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+        1.0f,
+        0
+    );
 }
 
 void D3D11Renderer::EndFrame()
@@ -108,7 +144,16 @@ void D3D11Renderer::EndFrame()
 
 void D3D11Renderer::Shutdown()
 {
+    if (m_DeviceContext)
+    {
+        m_DeviceContext->ClearState();
+    }
+
+    m_DepthStencilView.Reset();
+    m_DepthStencilBuffer.Reset();
+
     m_RenderTargetView.Reset();
+
     m_SwapChain.Reset();
     m_DeviceContext.Reset();
     m_Device.Reset();

@@ -16,6 +16,8 @@ public:
     void Shutdown();
 
 private:
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DepthStencilView;
     Microsoft::WRL::ComPtr<ID3D11Device> m_Device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext;
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_SwapChain;
