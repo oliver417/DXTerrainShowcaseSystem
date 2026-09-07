@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "Graphics/D3D11Renderer.h"
 #include "Graphics/Camera.h"
+#include "Terrain/BasicGrid.h"
 
 LRESULT CALLBACK WindowProc(
     HWND hwnd,
@@ -87,12 +88,12 @@ int WINAPI WinMain(
 
     camera.SetPosition(
         0.0f,
-        5.0f,
-        -10.0f
+        12.0f,
+        -18.0f
     );
 
     camera.SetRotation(
-        15.0f,
+        25.0f,
         0.0f,
         0.0f
     );
@@ -106,6 +107,24 @@ int WINAPI WinMain(
     );
 
     camera.Update();
+
+    BasicGrid grid;
+
+    if (!grid.Initialize(
+        renderer.GetDevice(),
+        64,
+        64,
+        0.5f))
+    {
+        MessageBoxW(
+            hwnd,
+            L"Failed to initialize Basic Grid.",
+            L"Error",
+            MB_OK | MB_ICONERROR
+        );
+
+        return -1;
+    }
 
     // -------------------------
     // Game Loop
@@ -139,7 +158,11 @@ int WINAPI WinMain(
 
         renderer.BeginFrame();
 
-        // 앞으로 여기에 Terrain.Render()
+        grid.Render(
+            renderer.GetContext(),
+            camera.GetViewMatrix(),
+            camera.GetProjectionMatrix()
+        );
 
         renderer.EndFrame();
     }

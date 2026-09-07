@@ -12,8 +12,17 @@ public:
 
     void BeginFrame();
     void EndFrame();
-
     void Shutdown();
+
+    ID3D11Device* GetDevice() const
+    {
+        return m_Device.Get();
+    }
+
+    ID3D11DeviceContext* GetContext() const
+    {
+        return m_DeviceContext.Get();
+    }
 
 private:
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
