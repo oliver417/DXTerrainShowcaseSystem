@@ -1,6 +1,6 @@
 #include <Windows.h>
+#include "Graphics/D3D11Renderer.h"
 
-// Windows 메시지를 처리하는 함수
 LRESULT CALLBACK WindowProc(
     HWND hwnd,
     UINT message,
@@ -14,18 +14,26 @@ LRESULT CALLBACK WindowProc(
         return 0;
     }
 
-    return DefWindowProc(hwnd, message, wParam, lParam);
+    return DefWindowProc(
+        hwnd,
+        message,
+        wParam,
+        lParam
+    );
 }
 
 int WINAPI WinMain(
     HINSTANCE hInstance,
-    HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine,
+    HINSTANCE,
+    LPSTR,
     int nCmdShow)
 {
-    const wchar_t CLASS_NAME[] = L"DXTerrainShowcaseWindow";
+    constexpr int WIDTH = 1280;
+    constexpr int HEIGHT = 720;
 
-    // 1. Window Class 등록
+    const wchar_t CLASS_NAME[] =
+        L"DXTerrainShowcaseWindow";
+
     WNDCLASSW wc = {};
 
     wc.lpfnWndProc = WindowProc;
@@ -33,9 +41,9 @@ int WINAPI WinMain(
     wc.lpszClassName = CLASS_NAME;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
-    RegisterClassW(&wc);
+    if (!RegisterClassW(&wc))
+        return -1;
 
-    // 2. 실제 Window 생성
     HWND hwnd = CreateWindowExW(
         0,
         CLASS_NAME,
@@ -43,30 +51,75 @@ int WINAPI WinMain(
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        1280,
-        720,
+        WIDTH,
+        HEIGHT,
         nullptr,
         nullptr,
         hInstance,
         nullptr
     );
 
-    if (hwnd == nullptr)
-    {
-        return 0;
-    }
+    if (!hwnd)
+        return -1;
 
-    // 3. Window 표시
     ShowWindow(hwnd, nCmdShow);
 
-    // 4. Message Loop
-    MSG msg = {};
+    // -------------------------
+    // DirectX 11 초기화
+    // -------------------------
 
-    while (GetMessage(&msg, nullptr, 0, 0))
+    D3D11Renderer renderer;
+
+    if (!renderer.Initialize(hwnd, WIDTH, HEIGHT))
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        MessageBoxW(
+            hwnd,
+            L"DirectX 11 initialization failed.",
+            L"Error",
+            MB_OK | MB_ICONERROR
+        );
+
+        return -1;
     }
 
-    return static_cast<int>(msg.wParam);
+    // -------------------------
+    // Game Loop
+    // -------------------------
+
+    MSG msg = {};
+
+    bool running = true;
+
+    while (running)
+    {
+        while (PeekMessage(
+            &msg,
+            nullptr,
+            0,
+            0,
+            PM_REMOVE))
+        {
+            if (msg.message == WM_QUIT)
+            {
+                running = false;
+                break;
+            }
+
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        if (!running)
+            break;
+
+        renderer.BeginFrame();
+
+        // 앞으로 여기에 Terrain.Render()
+
+        renderer.EndFrame();
+    }
+
+    renderer.Shutdown();
+
+    return 0;
 }

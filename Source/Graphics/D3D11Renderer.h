@@ -1,0 +1,23 @@
+#pragma once
+
+#include <Windows.h>
+#include <d3d11.h>
+#include <dxgi.h>
+#include <wrl/client.h>
+
+class D3D11Renderer
+{
+public:
+    bool Initialize(HWND hwnd, int width, int height);
+
+    void BeginFrame();
+    void EndFrame();
+
+    void Shutdown();
+
+private:
+    Microsoft::WRL::ComPtr<ID3D11Device> m_Device;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext;
+    Microsoft::WRL::ComPtr<IDXGISwapChain> m_SwapChain;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTargetView;
+};
