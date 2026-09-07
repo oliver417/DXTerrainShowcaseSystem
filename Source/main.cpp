@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include "Graphics/D3D11Renderer.h"
+#include "Graphics/Camera.h"
 
 LRESULT CALLBACK WindowProc(
     HWND hwnd,
@@ -81,6 +82,30 @@ int WINAPI WinMain(
 
         return -1;
     }
+
+    Camera camera;
+
+    camera.SetPosition(
+        0.0f,
+        5.0f,
+        -10.0f
+    );
+
+    camera.SetRotation(
+        15.0f,
+        0.0f,
+        0.0f
+    );
+
+    camera.SetProjection(
+        60.0f,
+        static_cast<float>(WIDTH) /
+        static_cast<float>(HEIGHT),
+        0.1f,
+        1000.0f
+    );
+
+    camera.Update();
 
     // -------------------------
     // Game Loop
